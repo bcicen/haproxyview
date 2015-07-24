@@ -1,0 +1,150 @@
+<!doctype html>
+<head>
+<title>HAProxyView</title>
+    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
+    <style type="text/css">
+
+      body{
+        width: 100%;
+        height: 100%;
+        margin:0;
+        padding:0;
+        position:relative;
+        //background:#151e25 url(bg.jpg);
+        //background-position: 0px -300px;
+        //background-repeat:no-repeat;
+        //background-position: bottom center;
+        font:16px/24px 'Droid Sans', 'Tangerine', 'Inconsolata', serif;
+     }
+
+p{
+font-size:0.9em;
+}
+
+h1{
+font-size:1.75em;
+}
+
+h2{
+font-size:1.5em;
+}
+
+h3{
+font-size:1.25em;
+}
+
+h4{
+font-size:.7em;
+margin-bottom: 3px;
+}
+
+
+      #header {
+        width: 100%;
+        height: 55px;
+        background-image: url(/static/haproxyview.png);
+        background-repeat: no-repeat;
+        background-position: 20px 5px;
+  text-align: right;
+margin-left: -10px;
+      }
+
+      #line {
+        width: 90%;
+        border-bottom: #aaa 2px solid;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 5px;
+        margin-bottom: 10px;
+      }
+
+      #wrap {
+        width: 100%;
+        display: block;
+        text-align: center;
+      }
+
+      #server {
+				width: 400px;
+        font-size: 16px;
+        color: #2A2A2A;
+        display: inline-block;
+        line-height: 2em;
+				padding: 8px;
+        text-align: center;
+      }
+
+  #server a:hover {
+    color: #6e6e6e;
+  }
+
+  .tooltip {
+    background: rgba(210, 210, 210, 0.9);
+    font:16px/24px 'Droid Sans', 'Tangerine', 'Inconsolata', serif;
+  }
+
+  .red {
+    background-color: rgba(152, 0, 0, 0.46);
+  }
+
+  .green {
+    background-color: rgba(0, 152, 24, 0.46);
+  }
+
+  .grey {
+    background-color: rgba(0,0,50,.11);
+    border-radius: 8px 8px 0px 0px;
+  }
+
+  .light-grey {
+    background-color: rgba(0,0,50,.07);
+  }
+
+</style>
+
+<script>
+if (!!window.EventSource) {
+  var source = new EventSource('/');
+  source.onmessage = function(e) {
+	  document.getElementById('wrap').innerHTML = '';
+		servers = JSON.parse(e.data)
+
+		for (var i in servers) {
+			server = servers[i]
+
+			var div = document.createElement('div');
+			div.id = 'server'
+		  div.innerHTML = '<h1 class="grey" style="padding: 8px;">' + server.backends[0].proxy_name + '</h1>';
+
+		  for (var i in server.backends) {
+				backend = server.backends[i] 
+			  div.innerHTML += '<h2 class="light-grey" style="padding: 5px 0px 5px 0px;">' + backend.name + '</h2>'
+
+		    for (var i in backend.listeners) {
+				  listener = backend.listeners[i] 
+					string = '';
+					for (var prop in listener) {
+						string += prop + ': ' + listener[prop] + '\n' 
+					}
+					if (listener['status'] == 'UP') {
+			      div.innerHTML += '<p class="green" title="' + string + '"style="padding: 5px 0px 5px 0px;">' + listener.name + '</p>'
+					} else {
+			      div.innerHTML += '<p class="red" title="' + string + '"style="padding: 5px 0px 5px 0px;">' + listener.name + '</p>'
+					}
+				}
+			}
+
+		document.getElementById('wrap').appendChild(div);
+
+		}
+			  //document.body.appendChild(div);
+//			h1.innerHTML = i;
+//			document.getElementById('data').appendChild(h1);
+  }
+}
+</script>
+<body>
+<div id="wrap">nothing received yet</div>
+</body>
