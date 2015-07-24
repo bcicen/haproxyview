@@ -1,0 +1,1 @@
+haproxy-stats>=0.5
