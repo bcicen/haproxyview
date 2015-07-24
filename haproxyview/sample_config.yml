@@ -1,0 +1,5 @@
+servers:
+  - 'server1:3212'
+  - 'server2:3212'
+user: username
+pass: mypassword
