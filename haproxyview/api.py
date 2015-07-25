@@ -15,7 +15,6 @@ def index():
             pubsub = redis.pubsub(ignore_subscribe_messages=True)
             pubsub.subscribe('haproxyview')
             for e in pubsub.listen():
-                print e
                 yield('data: %s\n\n' % e['data'])
 
         return Response(events(), content_type='text/event-stream')

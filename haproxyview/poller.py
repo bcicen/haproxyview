@@ -20,10 +20,15 @@ class Poller(object):
             config = yaml.load(of.read())
 
         self.last_states = ""
+        user = None
+        password = None
+        
+        if config.has_key('user'):
+            user = config['user']
+        if config.has_key('pass'):
+            password = config['pass']
 
-        self.hs = HaproxyStats(
-                config['servers'],user=config['user'],user_pass=config['pass']
-                )
+        self.hs = HaproxyStats(config['servers'],user=user,user_pass=password)
 
         self._run_forever()
 
@@ -38,7 +43,6 @@ class Poller(object):
             self.hs.update()
             current_states = [ s.stats for s in self.hs.servers ] 
 
-            print current_states
             if current_states != self.last_states:
                 redis.publish('haproxyview', json.dumps(current_states))
                 self.last_states = deepcopy(current_states) 

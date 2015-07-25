@@ -3,6 +3,7 @@
 <title>HAProxyView</title>
     <script src="//code.jquery.com/jquery-1.10.2.js"></script>
     <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+		<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
 
     <style type="text/css">
 
@@ -19,36 +20,14 @@
         font:16px/24px 'Droid Sans', 'Tangerine', 'Inconsolata', serif;
      }
 
-p{
-font-size:0.9em;
-}
-
-h1{
-font-size:1.75em;
-}
-
-h2{
-font-size:1.5em;
-}
-
-h3{
-font-size:1.25em;
-}
-
-h4{
-font-size:.7em;
-margin-bottom: 3px;
-}
-
-
       #header {
         width: 100%;
         height: 55px;
         background-image: url(/static/haproxyview.png);
         background-repeat: no-repeat;
         background-position: 20px 5px;
-  text-align: right;
-margin-left: -10px;
+        text-align: right;
+        margin-left: -10px;
       }
 
       #line {
@@ -64,25 +43,48 @@ margin-left: -10px;
         width: 100%;
         display: block;
         text-align: center;
+				padding-top: 10px;
+      }
+
+			
+      #container {
+				max-width: 450px;
+        color: #2A2A2A;
+        display: inline-block;
+        background-color: rgba(223, 223, 223, 1);
+        border-radius: 8px 8px 8px 8px;
+				padding-bottom:5px;
+				margin-right:10px;
       }
 
       #server {
-				width: 400px;
-        font-size: 16px;
-        color: #2A2A2A;
-        display: inline-block;
-        line-height: 2em;
+        font-size:1.5em;
+		    font-weight: bold;
 				padding: 8px;
-        text-align: center;
       }
 
-  #server a:hover {
+  #backend {
+		width: 100%;
+		padding: 2px 0px 2px 0px;
+    border-top: #fff 1px solid;
+    font-size:0.9em;
+		font-weight: bold;
+    background-color: rgba(233, 233, 233, 1);
+	}
+
+  #listener {
+    //display: inline-block;
+	 	//margin-right: 2px;
+    font-size:0.8em;
+	}
+
+  #listener a:hover {
     color: #6e6e6e;
   }
 
   .tooltip {
     background: rgba(210, 210, 210, 0.9);
-    font:16px/24px 'Droid Sans', 'Tangerine', 'Inconsolata', serif;
+    font:12px/16px 'Droid Sans', 'Tangerine', 'Inconsolata', serif;
   }
 
   .red {
@@ -90,20 +92,19 @@ margin-left: -10px;
   }
 
   .green {
-    background-color: rgba(0, 152, 24, 0.46);
-  }
-
-  .grey {
-    background-color: rgba(0,0,50,.11);
-    border-radius: 8px 8px 0px 0px;
-  }
-
-  .light-grey {
-    background-color: rgba(0,0,50,.07);
+    background-color: rgba(192, 227, 198, 1);
   }
 
 </style>
 
+<script>
+  $(document).ready(function() {
+    $( document ).tooltip({
+      track: true, 
+      tooltipClass: "tooltip",
+    });
+  });
+</script>
 <script>
 if (!!window.EventSource) {
   var source = new EventSource('/');
@@ -115,23 +116,23 @@ if (!!window.EventSource) {
 			server = servers[i]
 
 			var div = document.createElement('div');
-			div.id = 'server'
-		  div.innerHTML = '<h1 class="grey" style="padding: 8px;">' + server.backends[0].proxy_name + '</h1>';
+			div.id = 'container'
+			div.innerHTML = '<div id="server">' + server.backends[0].proxy_name + '</div>';
 
 		  for (var i in server.backends) {
 				backend = server.backends[i] 
-			  div.innerHTML += '<h2 class="light-grey" style="padding: 5px 0px 5px 0px;">' + backend.name + '</h2>'
+			  div.innerHTML += '<div id="backend">' + backend.name + '</div>'
 
 		    for (var i in backend.listeners) {
 				  listener = backend.listeners[i] 
-					string = '';
+					ttip = '';
 					for (var prop in listener) {
-						string += prop + ': ' + listener[prop] + '\n' 
+						ttip +='<p>' + prop + ': ' + listener[prop] + '</p>'
 					}
 					if (listener['status'] == 'UP') {
-			      div.innerHTML += '<p class="green" title="' + string + '"style="padding: 5px 0px 5px 0px;">' + listener.name + '</p>'
+			      div.innerHTML += '<div id="listener" class="green" title="' + ttip + '"style="padding: 5px 0px 5px 0px;">' + listener.name + '</div>'
 					} else {
-			      div.innerHTML += '<p class="red" title="' + string + '"style="padding: 5px 0px 5px 0px;">' + listener.name + '</p>'
+			      div.innerHTML += '<div id="listener" class="red" title="' + ttip + '"style="padding: 5px 0px 5px 0px;">' + listener.name + '</div>'
 					}
 				}
 			}
@@ -146,5 +147,6 @@ if (!!window.EventSource) {
 }
 </script>
 <body>
+<div id="line"></div>
 <div id="wrap">nothing received yet</div>
 </body>

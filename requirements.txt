@@ -1,3 +1,6 @@
-haproxy-stats>=0.5
-requests>=2.7.0
+haproxy-stats>=0.6
 redis>=2.10.3
+Flask>=0.9
+gunicorn>=0.17.4
+PyYAML>=3.11
+gevent>=1.0.1
