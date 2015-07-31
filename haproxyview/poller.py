@@ -48,6 +48,3 @@ class Poller(object):
         """
         Format stats, returning only the values we care about
         """
-
-if __name__ == '__main__':
-    p = Poller()
