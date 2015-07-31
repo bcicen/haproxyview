@@ -3,7 +3,7 @@
 <title>HAProxyView</title>
     <script src="//code.jquery.com/jquery-1.10.2.js"></script>
     <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-		<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
 
     <style type="text/css">
 
@@ -43,110 +43,141 @@
         width: 100%;
         display: block;
         text-align: center;
-				padding-top: 10px;
+        padding-top: 50px;
       }
 
-			
       #container {
-				max-width: 450px;
+        max-width: 450px;
         color: #2A2A2A;
         display: inline-block;
         background-color: rgba(223, 223, 223, 1);
         border-radius: 8px 8px 8px 8px;
-				padding-bottom:5px;
-				margin-right:10px;
+        padding-bottom:5px;
+        margin-right:10px;
       }
 
       #server {
         font-size:1.5em;
-		    font-weight: bold;
-				padding: 8px;
+        font-weight: bold;
+        padding: 8px;
       }
 
-  #backend {
-		width: 100%;
-		padding: 2px 0px 2px 0px;
-    border-top: #fff 1px solid;
-    font-size:0.9em;
-		font-weight: bold;
-    background-color: rgba(233, 233, 233, 1);
-	}
+       #backend {
+         width: 100%;
+         padding: 2px 0px 2px 0px;
+         border-top: #fff 1px solid;
+         text-align: center;
+         display: inline-block;
+         background-color: rgba(233, 233, 233, 1);
+      }
 
-  #listener {
-    //display: inline-block;
-	 	//margin-right: 2px;
-    font-size:0.8em;
-	}
+       #backend h1 {
+         font-size:1.0em;
+         //line-height:2.0em;
+         font-weight: bold;
+      }
 
-  #listener a:hover {
-    color: #6e6e6e;
-  }
+       #backend a {
+         display: inline-block;
+         vertical-align: middle;
+         margin-left: 6px;
+         margin-bottom: 6px;
+         width: 25px;
+         height: 25px;
+         overflow: hidden;
+         border-radius: 2px 2px 2px 2px;
+      }
 
-  .tooltip {
-    background: rgba(210, 210, 210, 0.9);
-    font:12px/16px 'Droid Sans', 'Tangerine', 'Inconsolata', serif;
-  }
+      .red {
+         background-color: rgba(152, 0, 0, 0.46);
+      }
 
-  .red {
-    background-color: rgba(152, 0, 0, 0.46);
-  }
+      .green {
+         background-color: rgba(192, 227, 198, 1);
+      }
 
-  .green {
-    background-color: rgba(192, 227, 198, 1);
-  }
+      #backend a:hover {
+        background-color: rgba(176, 176, 176, 1);
+      }
+
+      #statbox {
+        width: 500px;
+        margin-top: 20px;
+        margin-left: auto;
+        margin-right: auto;
+        position: fixed; top:2%; right:2%;
+        padding: 10px;
+        background-color: rgba(236, 236, 236, 1);
+        border-radius: 8px;
+      }
+
+      #stat {
+        padding: 10px;
+        text-align: center;
+        font-size:0.9em;
+        line-height:1.0em;
+      }
 
 </style>
-
 <script>
-  $(document).ready(function() {
-    $( document ).tooltip({
-      track: true, 
-      tooltipClass: "tooltip",
-    });
+$(document).ready(function() {
+  $(document.body).on("click","a",function(){
+    jQuery('#stat').hide();
+    var newstat = $(this).attr("stat");
+    var newdiv = $('<div id="stat">' + $(this).attr("stat") + '</div>').hide();
+    $('#stat').replaceWith(newdiv);
+    $('#stat').delay(100).fadeIn();
   });
+});
 </script>
 <script>
 if (!!window.EventSource) {
   var source = new EventSource('/');
   source.onmessage = function(e) {
-	  document.getElementById('wrap').innerHTML = '';
-		servers = JSON.parse(e.data)
+    jQuery('#wrap').empty();
+    servers = JSON.parse(e.data)
 
-		for (var i in servers) {
-			server = servers[i]
+      for (var i in servers) {
+        server = servers[i]
 
-			var div = document.createElement('div');
-			div.id = 'container'
-			div.innerHTML = '<div id="server">' + server.backends[0].proxy_name + '</div>';
+        var serverdiv = document.createElement('div');
+        serverdiv.id = 'container'
+          serverdiv.innerHTML = '<div id="server">' + server.backends[0].proxy_name + '</div>';
 
-		  for (var i in server.backends) {
-				backend = server.backends[i] 
-			  div.innerHTML += '<div id="backend">' + backend.name + '</div>'
+        for (var i in server.backends) {
+          backend = server.backends[i] 
 
-		    for (var i in backend.listeners) {
-				  listener = backend.listeners[i] 
-					ttip = '';
-					for (var prop in listener) {
-						ttip +='<p>' + prop + ': ' + listener[prop] + '</p>'
-					}
-					if (listener['status'] == 'UP') {
-			      div.innerHTML += '<div id="listener" class="green" title="' + ttip + '"style="padding: 5px 0px 5px 0px;">' + listener.name + '</div>'
-					} else {
-			      div.innerHTML += '<div id="listener" class="red" title="' + ttip + '"style="padding: 5px 0px 5px 0px;">' + listener.name + '</div>'
-					}
-				}
-			}
+            var div = document.createElement('div');
+          div.id = 'backend'
+            div.innerHTML = '<h1>' + backend.name + '</h1>';
 
-		document.getElementById('wrap').appendChild(div);
+          for (var i in backend.listeners) {
+            listener = backend.listeners[i] 
+              fullstat = '';
+            for (var prop in listener) {
+              fullstat += prop + ': ' + listener[prop] + '<br>'
+            }
+            if (listener['status'] == 'UP') {
+              div.innerHTML += '<a class="green" stat="' + fullstat + '"></a>'
+            } else {
+              div.innerHTML += '<a class="red" stat="' + fullstat + '"></a>'
+            }
+          }
 
-		}
-			  //document.body.appendChild(div);
-//			h1.innerHTML = i;
-//			document.getElementById('data').appendChild(h1);
+          serverdiv.appendChild(div);
+        }
+
+        jQuery("#wrap").append(serverdiv);
+
+      }
   }
 }
 </script>
 <body>
 <div id="line"></div>
 <div id="wrap">nothing received yet</div>
+<div id="statbox">
+	<div id="stat">nothing</div>
+</div>
 </body>
+</html>

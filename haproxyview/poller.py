@@ -7,11 +7,6 @@ from time import sleep
 from copy import deepcopy
 from redis import StrictRedis
 
-servers = [ 'lb-c.us-east-1.appcious.com:3212',
-            'lb-c.ap-northeast-1.appcious.com:3212' ]
-user = 'appcious_admin'
-user_pass = 'Culotte-anton8058'
-
 redis = StrictRedis()
 
 class Poller(object):
