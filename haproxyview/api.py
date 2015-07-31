@@ -20,6 +20,10 @@ def index():
         return Response(events(), content_type='text/event-stream')
     return redirect(url_for('static', filename='index.html'))
 
+@app.route('/stats')
+def stats():
+    return redis.get('haproxyview_stats')
+
 if __name__ == "__main__":
     app.logger.info('Starting HAProxyView v%s' % version)
     app.run(host='localhost', port=5000)

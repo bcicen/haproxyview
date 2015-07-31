@@ -39,7 +39,8 @@ class Poller(object):
             current_states = [ s.stats for s in self.hs.servers ] 
 
             if current_states != self.last_states:
-                redis.publish('haproxyview', json.dumps(current_states))
+                redis.set('haproxyview_stats', json.dumps(current_states))
+                redis.publish('haproxyview', 1)
                 self.last_states = deepcopy(current_states) 
             
             sleep(10)
