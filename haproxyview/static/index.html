@@ -120,7 +120,46 @@
 
 </style>
 <script>
+function update_stats() {
+  $.getJSON( "/stats", function(servers) {
+    jQuery('#wrap').empty();
+
+    for (var i in servers) {
+      server = servers[i]
+
+      var serverdiv = document.createElement('div');
+      serverdiv.id = 'container'
+        serverdiv.innerHTML = '<div id="server">' + server.backends[0].proxy_name + '</div>';
+
+      for (var i in server.backends) {
+        backend = server.backends[i] 
+
+          var div = document.createElement('div');
+        div.id = 'backend'
+          div.innerHTML = '<h1>' + backend.name + '</h1>';
+
+        for (var i in backend.listeners) {
+          listener = backend.listeners[i] 
+            fullstat = '';
+          for (var prop in listener) {
+            fullstat += prop + ': ' + listener[prop] + '<br>'
+          }
+          if (listener['status'] == 'UP') {
+            div.innerHTML += '<a class="green" stat="' + fullstat + '"></a>'
+          } else {
+            div.innerHTML += '<a class="red" stat="' + fullstat + '"></a>'
+          }
+        }
+        serverdiv.appendChild(div);
+      }
+      jQuery("#wrap").append(serverdiv);
+    }
+  });
+}
+</script>
+<script>
 $(document).ready(function() {
+  update_stats();
   $(document.body).on("click","a",function(){
     jQuery('#stat').hide();
     var newstat = $(this).attr("stat");
@@ -129,48 +168,12 @@ $(document).ready(function() {
     $('#stat').delay(100).fadeIn();
   });
 });
-</script>
-<script>
+
 if (!!window.EventSource) {
   var source = new EventSource('/');
   source.onmessage = function(e) {
-    jQuery('#wrap').empty();
-    servers = JSON.parse(e.data)
-
-      for (var i in servers) {
-        server = servers[i]
-
-        var serverdiv = document.createElement('div');
-        serverdiv.id = 'container'
-          serverdiv.innerHTML = '<div id="server">' + server.backends[0].proxy_name + '</div>';
-
-        for (var i in server.backends) {
-          backend = server.backends[i] 
-
-            var div = document.createElement('div');
-          div.id = 'backend'
-            div.innerHTML = '<h1>' + backend.name + '</h1>';
-
-          for (var i in backend.listeners) {
-            listener = backend.listeners[i] 
-              fullstat = '';
-            for (var prop in listener) {
-              fullstat += prop + ': ' + listener[prop] + '<br>'
-            }
-            if (listener['status'] == 'UP') {
-              div.innerHTML += '<a class="green" stat="' + fullstat + '"></a>'
-            } else {
-              div.innerHTML += '<a class="red" stat="' + fullstat + '"></a>'
-            }
-          }
-
-          serverdiv.appendChild(div);
-        }
-
-        jQuery("#wrap").append(serverdiv);
-
-      }
-  }
+  update_stats();
+ }
 }
 </script>
 <body>
