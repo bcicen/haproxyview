@@ -115,11 +115,19 @@
         padding: 10px;
         text-align: center;
         font-size:0.9em;
-        line-height:1.0em;
+        //line-height:1.0em;
       }
 
 </style>
 <script>
+function formatBytes(bytes) {
+  var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  if (bytes == 0) return '0 B';
+  var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+  num = bytes / Math.pow(1024, i);
+  return num.toFixed(2) + ' ' + sizes[i];
+};
+
 function update_stats() {
   $.getJSON( "/stats", function(servers) {
     jQuery('#wrap').empty();
@@ -140,10 +148,22 @@ function update_stats() {
 
         for (var i in backend.listeners) {
           listener = backend.listeners[i] 
-            fullstat = '';
-          for (var prop in listener) {
-            fullstat += prop + ': ' + listener[prop] + '<br>'
-          }
+          fullstat = '';
+          fullstat += '<h2>' + listener.name + '</h2>'
+          fullstat += 'Bytes In/Out: '
+          fullstat += formatBytes(listener.bin) + '/'
+          fullstat += formatBytes(listener.bout) + '<br>'
+          fullstat += 'Sessions(Current/Max/Total): '
+          fullstat += listener.scur + '/'
+          fullstat += listener.smax + '/'
+          fullstat += listener.stot + '<br>'
+          fullstat += 'Responses(1xx/2xx/3xx/4xx/5xx): '
+          fullstat += listener.hrsp_1xx + '/'
+          fullstat += listener.hrsp_2xx + '/'
+          fullstat += listener.hrsp_3xx + '/'
+          fullstat += listener.hrsp_4xx + '/'
+          fullstat += listener.hrsp_5xx + '<br>'
+
           if (listener['status'] == 'UP') {
             div.innerHTML += '<a class="green" stat="' + fullstat + '"></a>'
           } else {
