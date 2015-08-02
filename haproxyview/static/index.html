@@ -3,6 +3,7 @@
 <title>HAProxyView</title>
     <script src="//code.jquery.com/jquery-1.10.2.js"></script>
     <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <script src="jquery.dim-background.min.js"></script>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
 
     <style type="text/css">
@@ -54,6 +55,7 @@
         border-radius: 8px 8px 8px 8px;
         padding-bottom:5px;
         margin-right:10px;
+        margin-bottom:10px;
       }
 
       #server {
@@ -101,21 +103,15 @@
       }
 
       #statbox {
-        width: 500px;
+        display: none;
         margin-top: 20px;
-        margin-left: auto;
-        margin-right: auto;
-        position: fixed; top:2%; right:2%;
+        position: fixed; top:30%; right:43%;
         padding: 10px;
         background-color: rgba(236, 236, 236, 1);
         border-radius: 8px;
-      }
-
-      #stat {
-        padding: 10px;
+        box-shadow: 2px 5px 5px #626262;
         text-align: center;
         font-size:0.9em;
-        //line-height:1.0em;
       }
 
 </style>
@@ -148,26 +144,11 @@ function update_stats() {
 
         for (var i in backend.listeners) {
           listener = backend.listeners[i] 
-          fullstat = '';
-          fullstat += '<h2>' + listener.name + '</h2>'
-          fullstat += 'Bytes In/Out: '
-          fullstat += formatBytes(listener.bin) + '/'
-          fullstat += formatBytes(listener.bout) + '<br>'
-          fullstat += 'Sessions(Current/Max/Total): '
-          fullstat += listener.scur + '/'
-          fullstat += listener.smax + '/'
-          fullstat += listener.stot + '<br>'
-          fullstat += 'Responses(1xx/2xx/3xx/4xx/5xx): '
-          fullstat += listener.hrsp_1xx + '/'
-          fullstat += listener.hrsp_2xx + '/'
-          fullstat += listener.hrsp_3xx + '/'
-          fullstat += listener.hrsp_4xx + '/'
-          fullstat += listener.hrsp_5xx + '<br>'
 
           if (listener['status'] == 'UP') {
-            div.innerHTML += '<a class="green" stat="' + fullstat + '"></a>'
+            div.innerHTML += '<a class="green" stat=\'' + JSON.stringify(listener) + '\'></a>'
           } else {
-            div.innerHTML += '<a class="red" stat="' + fullstat + '"></a>'
+            div.innerHTML += '<a class="red" stat=\'' + JSON.stringify(listener) + '\'></a>'
           }
         }
         serverdiv.appendChild(div);
@@ -180,27 +161,91 @@ function update_stats() {
 <script>
 $(document).ready(function() {
   update_stats();
+
+  $(document.body).on("click","#statbox",function(){
+    jQuery('#statbox').hide();
+    $('#statbox').undim();
+  });
+
   $(document.body).on("click","a",function(){
-    jQuery('#stat').hide();
-    var newstat = $(this).attr("stat");
-    var newdiv = $('<div id="stat">' + $(this).attr("stat") + '</div>').hide();
-    $('#stat').replaceWith(newdiv);
-    $('#stat').delay(100).fadeIn();
+    var listenerjson = $(this).attr("stat");
+    var listener = JSON.parse(listenerjson);
+
+    fullstat = '';
+    fullstat += '<h2>' + listener.name + '</h2>'
+    fullstat += '<table style="margin: 0 auto;">'
+
+    fullstat += '<tr>'
+    fullstat += '<td>Bytes In</td>'
+    fullstat += '<td>' + formatBytes(listener.bin) + '</td>'
+    fullstat += '</tr>'
+
+    fullstat += '<tr>'
+    fullstat += '<td>Bytes Out</td>'
+    fullstat += '<td>' + formatBytes(listener.bout) + '</td>'
+    fullstat += '</tr>'
+
+    fullstat += '<tr>'
+    fullstat += '<td>Sessions Current</td>'
+    fullstat += '<td>' + listener.scur + '</td>'
+    fullstat += '</tr>'
+
+    fullstat += '<tr>'
+    fullstat += '<td>Sessions Max</td>'
+    fullstat += '<td>' + listener.smax + '</td>'
+    fullstat += '</tr>'
+
+    fullstat += '<tr>'
+    fullstat += '<td>Sessions Total</td>'
+    fullstat += '<td>' + listener.stot + '</td>'
+    fullstat += '</tr>'
+
+    fullstat += '<tr>'
+    fullstat += '<td>Responses(1xx)</td>'
+    fullstat += '<td>' + listener.hrsp_1xx + '</td>'
+    fullstat += '</tr>'
+
+    fullstat += '<tr>'
+    fullstat += '<td>Responses(2xx)</td>'
+    fullstat += '<td>' + listener.hrsp_2xx + '</td>'
+    fullstat += '</tr>'
+
+    fullstat += '<tr>'
+    fullstat += '<td>Responses(3xx)</td>'
+    fullstat += '<td>' + listener.hrsp_3xx + '</td>'
+    fullstat += '</tr>'
+
+    fullstat += '<tr>'
+    fullstat += '<td>Responses(4xx)</td>'
+    fullstat += '<td>' + listener.hrsp_4xx + '</td>'
+    fullstat += '</tr>'
+
+    fullstat += '<tr>'
+    fullstat += '<td>Responses(5xx)</td>'
+    fullstat += '<td>' + listener.hrsp_5xx + '</td>'
+    fullstat += '</tr>'
+
+    fullstat += '</table>'
+    
+    var newdiv = $('<div id="statbox">' + fullstat + '</div>').hide();
+    $('#statbox').replaceWith(newdiv);
+    $('#statbox').delay(100).fadeIn();
+    $('#statbox').dimBackground({
+      darkness : 0.8
+    });
   });
 });
 
 if (!!window.EventSource) {
   var source = new EventSource('/');
   source.onmessage = function(e) {
-  update_stats();
- }
+    update_stats();
+  }
 }
 </script>
 <body>
 <div id="line"></div>
 <div id="wrap">nothing received yet</div>
-<div id="statbox">
-	<div id="stat">nothing</div>
-</div>
+<div id="statbox"></div>
 </body>
 </html>
