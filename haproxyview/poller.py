@@ -10,18 +10,22 @@ from redis import StrictRedis
 redis = StrictRedis()
 
 class Poller(object):
-    def __init__(self,config_file='config.yml'):
+    """
+    """
+    last_states = []
+    user = None
+    password = None
+
+    def __init__(self,config_file='config.yml',interval=5):
         with open(config_file) as of:
             config = yaml.load(of.read())
 
-        self.last_states = ""
-        user = None
-        password = None
-        
         if config.has_key('user'):
             user = config['user']
         if config.has_key('pass'):
             password = config['pass']
+
+        self.interval = interval
 
         self.hs = HaproxyStats(config['servers'],user=user,user_pass=password)
 
@@ -43,9 +47,4 @@ class Poller(object):
                 redis.publish('haproxyview', 1)
                 self.last_states = deepcopy(current_states) 
             
-            sleep(10)
-
-    def _format(self):
-        """
-        Format stats, returning only the values we care about
-        """
+            sleep(self.interval)
