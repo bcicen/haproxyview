@@ -1,6 +1,5 @@
 import os
 import json
-import yaml
 from haproxystats import HaproxyStats
 from threading import Thread
 from time import sleep
@@ -12,25 +11,13 @@ redis = StrictRedis()
 class Poller(object):
     """
     """
-    #defaults
-    last_states = []
-    user = None
-    password = None
-    interval = 5
+    def __init__(self,server_list,user=None,password=None,interval=10):
+        self.last_states = []
+        self.interval = interval
 
-    def __init__(self,config_file='config.yml'):
-        with open(config_file) as of:
-            config = yaml.load(of.read())
+        self.hs = HaproxyStats(server_list,user=user,user_pass=password)
 
-        if config.has_key('user'):
-            user = config['user']
-        if config.has_key('pass'):
-            password = config['pass']
-        if config.has_key('interval'):
-            self.interval = config['interval']
-
-        self.hs = HaproxyStats(config['servers'],user=user,user_pass=password)
-
+        print('Starting poller with servers: \n%s' % '\n'.join(server_list))
         self._run_forever()
 
     def start(self):
@@ -39,7 +26,6 @@ class Poller(object):
         t.start()
 
     def _run_forever(self):
-        print('poller started')
         while True:
             self.hs.update()
             current_states = [ s.stats for s in self.hs.servers ] 
