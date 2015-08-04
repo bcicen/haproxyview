@@ -12,11 +12,13 @@ redis = StrictRedis()
 class Poller(object):
     """
     """
+    #defaults
     last_states = []
     user = None
     password = None
+    interval = 5
 
-    def __init__(self,config_file='config.yml',interval=5):
+    def __init__(self,config_file='config.yml'):
         with open(config_file) as of:
             config = yaml.load(of.read())
 
@@ -24,8 +26,8 @@ class Poller(object):
             user = config['user']
         if config.has_key('pass'):
             password = config['pass']
-
-        self.interval = interval
+        if config.has_key('interval'):
+            self.interval = config['interval']
 
         self.hs = HaproxyStats(config['servers'],user=user,user_pass=password)
 

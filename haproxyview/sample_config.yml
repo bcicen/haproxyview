@@ -3,3 +3,5 @@ servers:
   - 'server2:3212'
 user: username
 pass: mypassword
+redis: localhost:6379
+interval: 10
