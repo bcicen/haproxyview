@@ -1,7 +1,7 @@
 import itertools
 import time
 from flask import Flask, Response, redirect, request, url_for
-from __init__ import __version__ as version
+from version import __version__ as version
 from redis import StrictRedis
 
 app = Flask('haproxyview')
