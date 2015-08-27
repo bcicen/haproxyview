@@ -1,6 +1,5 @@
-haproxy-stats>=0.6
+haproxy-stats>=0.7
 eventlet>=0.17.4
 Flask>=0.9
-gunicorn>=0.17.4
 PyYAML>=3.11
-gevent>=1.0.1
+gevent==1.1b1
