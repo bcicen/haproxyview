@@ -1,14 +1,21 @@
+import os
+import sys
 import time
 import json
+import yaml
 
 from time import sleep
 from threading import Thread
 from gevent.wsgi import WSGIServer
+from argparse import ArgumentParser
 from haproxystats import HaproxyStats
 from flask import Flask, Response, redirect, request, url_for
 
-from version import version
-
+version = '0.5'
+#defaults
+config = { 'user': None,
+           'pass': None,
+           'interval': 10 }
 
 class Poller(object):
     def __init__(self, server_list, user, password):
@@ -52,3 +59,26 @@ class HaproxyView(object):
         print('Starting HaproxyView v%s' % version)
         http_server = WSGIServer(('', listen_port), self.app)
         http_server.serve_forever()
+
+def main():
+    parser = ArgumentParser(description='haproxyview %s' % (version))
+    parser.add_argument('-c',
+                        dest='config_path',
+                        help='Path to config file',
+                        default='config.yml')
+
+    args = parser.parse_args()
+    config_path = os.path.expanduser(args.config_path)
+
+    with open(config_path) as of:
+        config.update(yaml.load(of.read()))
+
+    print(config['servers'])
+    poller = Poller(config['servers'], config['user'], config['pass'])
+    poller.start(config['interval'])
+
+    haproxyview = HaproxyView(poller)
+    haproxyview.serve()
+
+if __name__ == '__main__':
+    main()
