@@ -124,7 +124,50 @@ function formatBytes(bytes) {
   return num.toFixed(2) + ' ' + sizes[i];
 };
 
-function update_stats() {
+function formatTime(timestamp) {
+  var dt = new Date(timestamp * 1000);
+
+  var hours = dt.getHours();
+  var minutes = dt.getMinutes();
+  var seconds = dt.getSeconds();
+
+  if (hours < 10) 
+   hours = '0' + hours;
+
+  if (minutes < 10) 
+   minutes = '0' + minutes;
+
+  if (seconds < 10) 
+   seconds = '0' + seconds;
+
+  return hours + ":" + minutes + ":" + seconds;
+}
+
+function formatDate(date, fmt) {
+  function pad(value) {
+    return (value.toString().length < 2) ? '0' + value : value;
+  }
+  return fmt.replace(/%([a-zA-Z])/g, function (_, fmtCode) {
+    switch (fmtCode) {
+      case 'Y':
+        return date.getFullYear();
+      case 'M':
+        return pad(date.getMonth() + 1);
+      case 'd':
+        return pad(date.getDate());
+      case 'H':
+        return pad(date.getHours());
+      case 'm':
+        return pad(date.getMinutes());
+      case 's':
+        return pad(date.getSeconds());
+      default:
+        throw new Error('Unsupported format code: ' + fmtCode);
+    }
+  });
+}
+
+function updateStats() {
   $.getJSON( "/stats", function(servers) {
     jQuery('#wrap').empty();
 
@@ -133,14 +176,14 @@ function update_stats() {
 
       var serverdiv = document.createElement('div');
       serverdiv.id = 'container'
-        serverdiv.innerHTML = '<div id="server">' + server.backends[0].proxy_name + '</div>';
+      serverdiv.innerHTML = '<div id="server">' + server.backends[0].proxy_name + '</div>';
 
       for (var i in server.backends) {
         backend = server.backends[i] 
 
-          var div = document.createElement('div');
+        var div = document.createElement('div');
         div.id = 'backend'
-          div.innerHTML = '<h1>' + backend.name + '</h1>';
+        div.innerHTML = '<h1>' + backend.name + '</h1>';
 
         for (var i in backend.listeners) {
           listener = backend.listeners[i] 
@@ -154,18 +197,23 @@ function update_stats() {
         serverdiv.appendChild(div);
       }
       jQuery("#wrap").append(serverdiv);
+
+      var header = document.getElementById('header');
+      header.innerHTML = 'Last updated:' + formatDate(new Date(), '%H:%m:%s');
     }
   });
 }
 </script>
 <script>
 $(document).ready(function() {
-  update_stats();
+  updateStats();
 
   $(document.body).on("click","#statbox",function(){
     jQuery('#statbox').hide();
     $('#statbox').undim();
   });
+
+	setInterval(updateStats, 5000);
 
   $(document.body).on("click","a",function(){
     var listenerjson = $(this).attr("stat");
@@ -235,15 +283,9 @@ $(document).ready(function() {
     });
   });
 });
-
-if (!!window.EventSource) {
-  var source = new EventSource('/');
-  source.onmessage = function(e) {
-    update_stats();
-  }
-}
 </script>
 <body>
+<div id="header"></div>
 <div id="line"></div>
 <div id="wrap">nothing received yet</div>
 <div id="statbox"></div>
