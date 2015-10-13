@@ -15,12 +15,18 @@ version = '0.5'
 #defaults
 config = { 'user': None,
            'pass': None,
-           'interval': 10 }
+           'interval': 10,
+           'verify_ssl': True }
 
 class Poller(object):
-    def __init__(self, server_list, user, password):
+    def __init__(self, config):
+        print('Starting poller with servers:%s' % config['servers'])
+
         self.stats = []
-        self.hs = HaproxyStats(server_list,user=user,user_pass=password)
+        self.hs = HaproxyStats(config['servers'],
+                               user=config['user'],
+                               password=config['pass'],
+                               verify_ssl=config['verify_ssl'])
 
     def start(self, interval=10):
         t = Thread(target=self._run_forever, args=(interval,))
@@ -73,8 +79,8 @@ def main():
     with open(config_path) as of:
         config.update(yaml.load(of.read()))
 
-    print(config['servers'])
-    poller = Poller(config['servers'], config['user'], config['pass'])
+    poller = Poller(config)
+
     poller.start(config['interval'])
 
     haproxyview = HaproxyView(poller)

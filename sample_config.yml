@@ -5,3 +5,4 @@ user: username
 pass: mypassword
 redis: localhost:6379
 interval: 10
+verify_ssl: True
