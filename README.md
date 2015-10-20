@@ -9,5 +9,5 @@ Create a config.yml file using sample_config.yml for reference and mount it insi
 
 ```
 docker pull bcicen/haproxy-view:latest
-docker run -d -p 8000:8000 -v /path/to/config.yml:/app/haproxyview/config.yml haproxy-view:latest
+docker run -d -p 8000:8000 -v /path/to/config.yml:/app/config.yml haproxy-view:latest
 ```
