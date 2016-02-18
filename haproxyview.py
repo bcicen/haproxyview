@@ -8,7 +8,7 @@ from time import sleep
 from threading import Thread
 from gevent.wsgi import WSGIServer
 from argparse import ArgumentParser
-from haproxystats import HaproxyStats
+from haproxystats import HAProxyServer
 from flask import Flask, Response, redirect, request, url_for
 
 version = '0.5'
@@ -23,10 +23,14 @@ class Poller(object):
         print('Starting poller with servers:%s' % config['servers'])
 
         self.stats = []
-        self.hs = HaproxyStats(config['servers'],
-                               user=config['user'],
-                               password=config['pass'],
-                               verify_ssl=config['verify_ssl'])
+        self.hs = []
+        for server in config['servers']:
+            self.hs.append(
+                    HAProxyServer(server,
+                        user=config['user'],
+                        password=config['pass'],
+                        verify_ssl=config['verify_ssl'])
+                    )
 
     def start(self, interval=10):
         t = Thread(target=self._run_forever, args=(interval,))
@@ -39,8 +43,11 @@ class Poller(object):
     def _run_forever(self, interval):
         print('Starting HAProxy Poller')
         while True:
-            self.hs.update()
-            self.stats = [ s.stats for s in self.hs.servers ] 
+            newstats = []
+            for h in self.hs:
+                h.update()
+                newstats.append(h.stats)
+            self.stats = newstats
             sleep(interval)
 
 class HaproxyView(object):
